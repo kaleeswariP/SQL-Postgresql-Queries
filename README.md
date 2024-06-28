@@ -78,7 +78,330 @@ PostgreSQL's extensibility is one of its standout features. Many extensions are 
 * **TimescaleDB**: An extension for time-series data, optimized for fast ingestion and complex queries.
 * **Citus**: Transforms PostgreSQL into a distributed database for horizontal scaling.
 
+## Core Topics
+
+### Indexing
+PostgreSQL supports various types of indexes to improve the performance of database operations by reducing the amount of data that needs to be scanned. 
+
+##### B-Tree Index
+Usage: Default index type in PostgreSQL. Suitable for most general-purpose indexing.
+
+Characteristics: Efficient for equality and range queries.
+
+Example:
+```sql
+CREATE INDEX index_name ON table_name (column_name);
+```
+
+##### Hash Index
+
+Usage: Useful for simple equality comparisons.
+
+Characteristics: Not commonly used due to some limitations, such as not being WAL-logged before PostgreSQL 10, making it less crash-safe.
+
+Example:
+```sql
+CREATE INDEX index_name ON table_name USING HASH (column_name);
+```
+##### GiST (Generalized Search Tree) Index
+   
+Usage: Suitable for complex data types, including geometric data types, full-text search, and more.
+
+Characteristics: Flexible indexing structure allowing various types of queries.
+
+Example:
+```sql
+CREATE INDEX index_name ON table_name USING GIST (column_name);
+```
+
+##### SP-GiST (Space-Partitioned Generalized Search Tree) Index
+Usage: Optimized for certain data types like geometric data and text search.
+
+Characteristics: Allows partitioning of data in a way that can lead to faster searches for some use cases.
+
+Example:
+```sql
+CREATE INDEX index_name ON table_name USING SPGIST (column_name);
+```
+
+##### GIN (Generalized Inverted Index)
+Usage: Ideal for indexing array values and full-text search.
+
+Characteristics: Efficient for indexing composite types and supports fast access to multi-valued columns.
+
+Example:
+```sql
+CREATE INDEX index_name ON table_name USING GIN (column_name);
+```
+
+##### BRIN (Block Range INdex)
+Usage: Suitable for very large tables where the data is naturally sorted or clustered on the indexed column.
+
+Characteristics: Provides a lightweight indexing method by summarizing ranges of block values.
+
+Example:
+```sql
+CREATE INDEX index_name ON table_name USING BRIN (column_name);
+```
+
+##### Full-Text Search Index (GIN and GiST)
+Usage: Specifically for full-text search capabilities in PostgreSQL.
+
+Characteristics: Can be created using GIN or GiST indexes tailored for text search.
+
+Example:
+```sql
+CREATE INDEX index_name ON table_name USING GIN (to_tsvector('english', column_name));
+```
+
+##### Bloom Filter Index
+Usage: Suitable for multiple columns with a high probability of being unique.
+
+Characteristics: Uses Bloom filters to create a space-efficient, probabilistic data structure.
+Example:
+```sql
+CREATE EXTENSION bloom;
+CREATE INDEX index_name ON table_name USING bloom (column1, column2);
+```
+
+##### Expression Indexes
+Usage: Indexes the result of an expression or function.
+
+Characteristics: Allows indexing of complex expressions or function results.
+
+Example:
+```sql
+CREATE INDEX index_name ON table_name ((lower(column_name)));
+```
+##### Partial Indexes
+Usage: Indexes only a subset of rows in a table.
+
+Characteristics: Improves performance and reduces storage by indexing only rows that meet a specific condition.
+
+Example:
+```sql
+CREATE INDEX index_name ON table_name (column_name) WHERE condition;
+````
+
+### Transactions
+
+**Basic Transaction Commands**
+
+* BEGIN: Starts a new transaction.
+* COMMIT: Saves all the changes made during the transaction.
+* ROLLBACK: Undoes all the changes made during the transaction.
+
+```sql
+BEGIN;
+
+-- SQL statements here
+INSERT INTO employees (name, position, salary) VALUES ('Alice', 'Developer', 50000);
+UPDATE employees SET salary = 55000 WHERE name = 'Alice';
+
+COMMIT; -- or ROLLBACK if something goes wrong
+
+```
+
+**Savepoints in Transactions**
+
+Savepoints allow you to set a point within a transaction to which you can roll back without affecting the entire transaction.
+
+```sql
+BEGIN;
+
+-- First operation
+INSERT INTO employees (name, position, salary) VALUES ('Bob', 'Manager', 70000);
+
+SAVEPOINT savepoint1;
+
+-- Second operation
+UPDATE employees SET salary = 75000 WHERE name = 'Bob';
+
+-- If the second operation fails, roll back to the savepoint
+ROLLBACK TO SAVEPOINT savepoint1;
+
+-- Commit the transaction
+COMMIT;
+
+```
+
+**Transaction Isolation Levels**
+
+PostgreSQL supports different isolation levels to control the visibility of changes made in a transaction to other concurrent transactions. The isolation levels are:
+
+* Read Committed (default): A statement can see only committed data.
+* Repeatable Read: Ensures the data read during the transaction remains consistent.
+* Serializable: Provides the strictest isolation level by ensuring complete isolation from other transactions.
+
+### Views
+### Command Line Interface
+
+
+## Questions and Answers
+
+#### What is PostgreSQL?
+
+PostgreSQL is a powerful, open-source relational database management system known for its robustness, extensibility, and standards compliance. It supports advanced data types, and complex queries, and is ACID-compliant.
+
+#### What is a primary key in PostgreSQL?
+A primary key is a column or a set of columns that uniquely identifies each row in a table. It ensures uniqueness and provides a unique index for faster access.
+
+#### What is a foreign key in PostgreSQL?
+
+A foreign key is a column or a set of columns in a table that establishes a link between data in two tables. It ensures referential integrity by enforcing a link between the foreign key column(s) and the primary key column(s) of another table.
+
+#### What is a transaction in PostgreSQL?
+
+A transaction is a sequence of one or more SQL operations that are executed as a single unit of work. PostgreSQL transactions are ACID compliant, ensuring atomicity, consistency, isolation, and durability.
+
+#### How do you start a transaction in PostgreSQL?
+You start a transaction using the `BEGIN` statement and end it using `COMMIT` or `ROLLBACK`:
+
+```sql
+BEGIN;
+-- SQL statements
+COMMIT;  -- or ROLLBACK;
+```
+
+#### How do you create an index in PostgreSQL?
+
+You create an index using the CREATE INDEX statement:
+```sql
+CREATE INDEX index_name ON table_name (column_name);
+```
+#### What is a partial index in PostgreSQL?
+
+A partial index is an index built on a subset of a table. It is defined by adding a `WHERE` clause to the `CREATE INDEX` statement:
+```sql
+CREATE INDEX index_name ON table_name (column_name) WHERE condition
+```
+
+#### How can you improve the performance of a PostgreSQL database?
+
+* Using indexes to speed up query execution.
+* Optimizing queries by analyzing execution plans with `EXPLAIN`.
+* Using appropriate data types and normalization.
+* Configuring PostgreSQL parameters for better performance `(e.g., work_mem, shared_buffers)`.
+* Archiving old data and partitioning large tables
+
+#### What are sequences in PostgreSQL, and how are they used?
+
+Sequences are special database objects designed for generating unique numeric identifiers. 
+
+They are often used for auto-incrementing primary key values:
+
+```sql
+CREATE SEQUENCE seq_name;
+SELECT nextval('seq_name');
+```
+
+#### What is a `VIEW` in PostgreSQL?
+
+A view is a virtual table based on the result set of an SQL query. It can be used to simplify complex queries, enhance security by restricting access to specific columns, and encapsulate complex logic.
+
+```sql
+CREATE VIEW view_name AS
+SELECT column1, column2 FROM table_name WHERE condition;
+```
+
 # MongoDB
+MongoDB is a popular open-source NoSQL database that uses a flexible, document-oriented data model to store, manage, and retrieve data. It is designed for scalability, high performance, and ease of development. 
+
+MongoDB is widely used in modern web applications due to its flexibility and powerful querying capabilities.
+
+## Core Concepts of MongoDB
+
+### Document-Oriented Database:
+MongoDB stores data in flexible, JSON-like documents, which means fields can vary from document to document, and data structure can change over time.
+
+### Collections:
+Documents are grouped into collections. A collection is a group of MongoDB documents that are similar in structure, akin to tables in relational databases.
+
+### Documents:
+The basic unit of data in MongoDB, similar to rows in relational databases. Documents are stored in BSON (Binary JSON) format and can contain arrays and subdocuments.
+
+Example of a MongoDB document:
+```json
+{
+  "_id": ObjectId("507f1f77bcf86cd799439011"),
+  "name": "John Doe",
+  "age": 29,
+  "address": {
+    "street": "123 Main St",
+    "city": "Anytown",
+    "state": "CA"
+  },
+  "hobbies": ["reading", "travelling"]
+}
+```
+
+### Schema-less:
+MongoDB is schema-less, meaning that documents in a collection do not need to have the same set of fields, and data types for the fields can vary across documents.
+
+### Indexes:
+Indexes in MongoDB function similarly to those in relational databases. They improve the performance of search queries.
+
+Example of creating an index:
+```javascript
+db.collection.createIndex({ "name": 1 });
+```
+
+### Replication:
+MongoDB provides high availability through replication. A replica set is a group of MongoDB servers that maintain the same data set, providing redundancy and automatic failover.
+
+Example of starting a replica set:
+```javascript
+rs.initiate()
+```
+### Sharding:
+Sharding is MongoDB's method for handling large data sets and high throughput operations by distributing data across multiple servers.
+
+Example of enabling sharding:
+```javascript
+sh.enableSharding("myDatabase");
+```
+
+### Aggregation Framework:
+MongoDB's aggregation framework allows for the processing of data records and returning computed results. It provides operations like filtering, grouping, and sorting data.
+
+Example of an aggregation query:
+```javascript
+db.orders.aggregate([
+  { $match: { status: "A" } },
+  { $group: { _id: "$cust_id", total: { $sum: "$amount" } } }
+]);
+```
+
+### CRUD Operations:
+MongoDB supports basic CRUD operations: Create, Read, Update, and Delete.
+
+Create: Insert documents into a collection.
+```javascript
+db.collection.insertOne({ name: "John Doe", age: 29 });
+```
+
+Read: Query documents from a collection.
+```javascript
+db.collection.find({ age: { $gte: 18 } });
+```
+
+Update: Modify existing documents in a collection.
+```javascript
+db.collection.updateOne({ name: "John Doe" }, { $set: { age: 30 } });
+```
+
+Delete: Remove documents from a collection.
+```javascript
+db.collection.deleteOne({ name: "John Doe" });
+```
+
+### Flexible Data Model:
+MongoDB’s schema-less nature allows for a more flexible and dynamic data model that can evolve with the needs of the application without requiring a predefined schema.
+
+### Ad-hoc Queries:
+MongoDB supports a rich query language that allows for ad-hoc queries, indexing, and real-time aggregation.
+
+## Types of Indexing in MongoDB
 
 ## SQL and PostgreSQL cheat sheets
 
