@@ -4,15 +4,16 @@ SQL (Structured Query Language) is a standardized programming language used for 
 
 It is essential for interacting with database systems and allows users to perform a variety of operations such as querying data, updating records, and managing database structures. 
  
-* [Types of databases]()
+* [Types of databases](https://github.com/kaleeswariP/SQL-Postgresql-Queries#types-of-databases)
   
-* [PostgresQL]()
-   * [Indexing]()
-   * [Transaction]()
-   * [Schemas]()
-   * [Views]()
+* [PostgresQL](https://github.com/kaleeswariP/SQL-Postgresql-Queries#postgres-database)
+   * [Indexing](https://github.com/kaleeswariP/SQL-Postgresql-Queries#indexing)
+   * [Transaction](https://github.com/kaleeswariP/SQL-Postgresql-Queries?tab=readme-ov-file#transactions)
+   * [Schemas](https://github.com/kaleeswariP/SQL-Postgresql-Queries?tab=readme-ov-file#schemas)
+   * [Views](https://github.com/kaleeswariP/SQL-Postgresql-Queries?tab=readme-ov-file#views)
    * [Sequences]()
    * [Functions]()
+   * [Command Line Interface CLI](https://github.com/kaleeswariP/SQL-Postgresql-Queries?tab=readme-ov-file#command-line-interface)
   
 * [MongoDB]()
 
@@ -346,7 +347,8 @@ SELECT * FROM customers;
 
 ### Views
 ### Command Line Interface
-
+### Sequences
+### Functions
 
 ## Questions and Answers
 
