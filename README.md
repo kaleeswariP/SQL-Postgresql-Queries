@@ -4,6 +4,17 @@ SQL (Structured Query Language) is a standardized programming language used for 
 
 It is essential for interacting with database systems and allows users to perform a variety of operations such as querying data, updating records, and managing database structures. 
  
+* [Types of databases]()
+  
+* [PostgresQL]()
+   * [Indexing]()
+   * [Transaction]()
+   * [Schemas]()
+   * [Views]()
+   * [Sequences]()
+   * [Functions]()
+  
+* [MongoDB]()
 
 ## Types of Databases
 
@@ -233,6 +244,106 @@ PostgreSQL supports different isolation levels to control the visibility of chan
 * Repeatable Read: Ensures the data read during the transaction remains consistent.
 * Serializable: Provides the strictest isolation level by ensuring complete isolation from other transactions.
 
+### Schemas
+In PostgreSQL, a schema is a logical container for database objects such as tables, views, indexes, sequences, functions, and other relations. Schemas help organize and manage these objects in a database, providing a namespace to avoid name conflicts between objects.
+
+#### What is a Schema in PostgreSQL?
+
+1. Namespace:
+
+   A schema acts as a namespace that allows multiple objects to have the same name as long as they belong to different schemas. This helps in organizing and managing database objects more efficiently.
+   
+2. Organization:
+
+   Schemas allow you to logically group related objects, making it easier to manage permissions and maintain the database structure.
+
+3. Default Schema:
+
+   PostgreSQL has a default schema called public. By default, all database objects are created in the public schema unless specified otherwise.
+
+4. Access and Security:
+
+    Schemas enable fine-grained access control. You can grant or revoke permissions on a schema, thereby controlling access to all objects within that schema.
+
+
+#### Creating and Using Schemas
+
+**Creating a Schema**
+
+You can create a new schema using the CREATE SCHEMA statement.
+
+```sql
+CREATE SCHEMA schema_name;
+-- example
+CREATE SCHEMA my_schema;
+```
+**Creating Objects in a Schema**
+
+To create a table or other objects in a specific schema, you need to specify the schema name.
+
+```sql
+CREATE TABLE my_schema.my_table (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100)
+);
+```
+
+**Using Schemas**
+
+To refer to an object within a specific schema, use the schema name as a prefix.
+
+```sql
+SELECT * FROM my_schema.my_table;
+```
+
+#### Managing Schemas
+**Listing Schemas**
+
+You can list all schemas in a database using the `\dn` command in `psql` or querying the `pg_catalog.pg_namespace` system catalog.
+
+```sql
+SELECT schema_name
+FROM information_schema.schemata;
+```
+**Changing the Search Path**
+
+The search path determines the order in which schemas are searched when an object name is referenced without a schema. You can change the search path using the `SET search_path` command.
+
+```sql
+SET search_path TO my_schema, public;
+```
+
+#### Example Workflow
+
+```sql
+-- Create a New Schema:
+
+CREATE SCHEMA sales;
+-- Create Objects in the Schema:
+
+CREATE TABLE sales.customers (
+  customer_id SERIAL PRIMARY KEY,
+  customer_name VARCHAR(100)
+);
+
+CREATE TABLE sales.orders (
+  order_id SERIAL PRIMARY KEY,
+  order_date DATE,
+  customer_id INTEGER REFERENCES sales.customers(customer_id)
+);
+
+-- Querying Objects:
+
+SELECT * FROM sales.customers;
+
+-- Setting the Search Path:
+
+SET search_path TO sales, public;
+
+-- Now you can reference the table without the schema prefix
+SELECT * FROM customers;
+```
+
 ### Views
 ### Command Line Interface
 
@@ -302,6 +413,30 @@ A view is a virtual table based on the result set of an SQL query. It can be use
 ```sql
 CREATE VIEW view_name AS
 SELECT column1, column2 FROM table_name WHERE condition;
+```
+
+#### do we insert new row without one column in postgresdb?
+
+**Yes**, you can insert a new row without specifying a value for one or more columns in PostgreSQL, provided those columns allow null values or have default values defined.
+
+If a column is defined to accept null values, it will automatically be set to NULL if you don't provide a value.
+
+If a column has a default value, that default will be used.
+
+Example
+
+```sql
+CREATE TABLE example_table (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  age INTEGER,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO example_table (name) VALUES ('John Doe');
+
+SELECT * FROM example_table;
+
 ```
 
 # MongoDB
